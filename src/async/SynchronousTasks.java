@@ -7,8 +7,6 @@ import java.util.concurrent.Callable;
 import java.util.stream.IntStream;
 
 public class SynchronousTasks {
-    record Quotation(String name, int price) {
-    }
 
     public static void main(String[] args) {
         run();
@@ -27,25 +25,20 @@ public class SynchronousTasks {
 
         Instant start = Instant.now();
 
-        var quotations = quotationTasks.stream()
-                .map(quotationCallable -> {
-                    try {
-                        return quotationCallable.call();
-                    } catch (Exception e) {
-                        Thread.currentThread().interrupt();
-                        return null;
-                    }
-                }).peek(q -> {
-                    if (q != null) {
-                        System.out.println("Quotation: " + q.name + " price: " + q.price);
-                    }
-                })
-                .toList();
+        quotationTasks.forEach(quotationCallable -> {
+            try {
+                var q = quotationCallable.call();
+                System.out.println(q.name() + " price: " + q.price());
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+
+            }
+        });
 
         Instant end = Instant.now();
 
         Duration duration = Duration.between(start, end);
 
-        System.out.println("Duration: " + duration.toMillis() + " ms");
+        System.out.println("Duration [SYNC]: " + duration.toMillis() + " ms");
     }
 }
