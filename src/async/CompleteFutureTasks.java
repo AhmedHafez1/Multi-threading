@@ -2,6 +2,7 @@ package async;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -37,10 +38,20 @@ public class CompleteFutureTasks {
                 .map(CompletableFuture::supplyAsync)
                 .toList();
 
+        List<CompletableFuture<Void>> allDone = new ArrayList<>();
+
         futureList.forEach(futureQuot -> {
-            var q = futureQuot.join();
-            System.out.println(q.name() + " price: " + q.price());
+
+            var accept = futureQuot.thenAccept(q -> {
+                System.out.println(q.name() + " price: " + q.price());
+            });
+
+            allDone.add(accept);
         });
+
+        for (CompletableFuture<Void> done : allDone) {
+            done.join();
+        }
 
         Instant end = Instant.now();
 
